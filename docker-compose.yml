@@ -4,7 +4,7 @@ services:
   oauth2:
     build: oauth2
     ports:
-      - "8883:8883"
+      - "8884:8884"
     environment:
       - TZ=Asia/Shanghai
     volumes:

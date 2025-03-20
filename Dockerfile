@@ -18,7 +18,7 @@ COPY oauth2 .
 RUN go build -o main cmd/oauth2/main.go
 
 # 暴露端口
-EXPOSE 8883
+EXPOSE 8884
 
 # 运行应用
 CMD ["./main"]
