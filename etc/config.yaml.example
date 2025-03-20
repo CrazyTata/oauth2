@@ -1,0 +1,58 @@
+Name: oauth2
+Host: 0.0.0.0
+Port: 8883
+Domain: http://localhost:8883`
+Env: dev
+PaymentHost: http://localhost:8882
+Log:
+  stat: false
+  Path: "/var/log/oauth2/"
+  Mode: "console"       # default=console,options=[console,file,volume]
+  Level: "debug"        #    default=info,options=[debug,info,error,severe]
+  KeepDays: 5
+
+
+DB:
+  DataSource: root:123456@tcp(localhost:43306)/oauth2?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai # 数据库连接地址 自建最好修改下密码
+
+# jwt 配置
+FrontendAuth:
+  AccessSecret: "13safhasfuawefc0f0"
+  AccessExpire: 25920000
+
+BaseCallbackURL: http://localhost:8883
+
+TokenAnalysis:
+  Url: 
+  Android:
+   Appid: 
+   Version: "2.0"
+   StrictCheck: "0"
+   APPSecret: 
+  Ios:
+   Appid: 
+   Version: "2.0"
+   StrictCheck: "0"
+   APPSecret: 
+
+MSG:
+  SMSTemplate: "【叮当】您的验证码为{code}，该验证码30分钟内有效，请勿泄漏于他人！"
+  Url: "https://api.smsbao.com/sms"
+  ApiKey: 
+  Account: 
+
+
+# Apple 登录配置
+Apple:
+  ClientID: "2999999999"
+  TeamID: "2999999999"
+  KeyID: "2999999999"
+  Secret: "2999999999"
+  Redirect: "http://localhost:8883/api/v1/auth/apple/callback"
+
+Qiniu:
+  AccessKey: ""
+  SecretKey: ""
+  Bucket: baixiaomiao
+  Domain: https://miaostatic.pansi.com
+  Region: ZoneHuaDong

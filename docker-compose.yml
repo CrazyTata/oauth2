@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  oauth2:
+    build: oauth2
+    ports:
+      - "8883:8883"
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      - ./logs/oauth2:/var/log/oauth2
+      - ./etc:/app/etc
+    networks:
+      - chatgpt-wechat_network
+    
+networks:
+  chatgpt-wechat_network:
+    external: true
+
+volumes:
+  mysql_data: 

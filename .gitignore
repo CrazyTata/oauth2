@@ -1,0 +1,36 @@
+# IDE 相关
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Go 编译文件
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+
+
+# 项目特定文件
+/logs/
+*.log
+.env
+.env.*
+.cursorrules
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 临时文件
+*.tmp
+*~
+techingaid.go
+# 配置文件（根据需要取消注释）
+etc/*.yaml
+file/
+vendor/
+1.md
