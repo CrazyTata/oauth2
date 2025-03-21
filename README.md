@@ -106,75 +106,46 @@ sequenceDiagram
 ## API 接口
 
 
-### 1 初始化存储
+### 1 创建client
 
-```go
-func initStorage(svcCtx *svc.ServiceContext) *service.Storage {
-    storage := service.NewStorage(svcCtx, "oauth2_")
-    err := storage.CreateSchemas()
-    if err != nil {
-        panic(err)
-    }
-    return storage
-}
+```curl
+curl --location --request POST 'http://127.0.0.1:8884/v1/oauth/create-client' 
 ```
 
-### 2 创建OAuth服务器
+### 2 授权码授权
 
-```go
-func NewOAuthServer(storage *service.Storage) *osin.Server {
-    config := osin.NewServerConfig()
-    config.AllowedAuthorizeTypes = osin.AllowedAuthorizeType{
-        osin.CODE,
-    }
-    config.AllowedAccessTypes = osin.AllowedAccessType{
-        osin.AUTHORIZATION_CODE,
-        osin.REFRESH_TOKEN,
-    }
-    
-    server := osin.NewServer(config, storage)
-    return server
-}
+```curl
+curl --location 'http://127.0.0.1:8884/v1/oauth/authorize?response_type=code&client_id=1234&redirect_uri=http%3A%2F%2F127.0.0.1%3A8884%2Fv1%2Foauth%2Fcallback' \
+--header 'Content-Type: application/json'
 ```
 
-### 3 实现授权码授权端点
+### 3 客户端授权
 
 ```go
-func AuthorizeHandler(svc *svc.ServiceContext) http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-        server := NewOAuthServer(svc.Storage)
-        resp := server.NewResponse()
-        defer resp.Close()
-        
-        if ar := server.HandleAuthorizeRequest(resp, r); ar != nil {
-            ar.Authorized = true
-            server.FinishAuthorizeRequest(resp, r, ar)
-        }
-        
-        osin.OutputJSON(resp, w, r)
-    }
-}
+curl --location 'http://127.0.0.1:8884/v1/oauth/token' \
+--header 'Authorization: Basic ' \
+--header 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode 'grant_type=client_credentials'
+```
+Authorization参数：
+echo -n "client_id:client_secret" | base64
+
+
+### 4 刷新Token
+
+```curl
+curl --location 'http://127.0.0.1:8884/v1/oauth/refresh' \
+--header 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode 'refresh_token=' \
+--data-urlencode 'scope=read write'
 ```
 
-### 4 实现客户端授权端点
+### 5 验证Token
 
-```go
-func TokenHandler(svc *svc.ServiceContext) http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-        server := NewOAuthServer(svc.Storage)
-        resp := server.NewResponse()
-        defer resp.Close()
-        
-        if ar := server.HandleAccessRequest(resp, r); ar != nil {
-            ar.Authorized = true
-            server.FinishAccessRequest(resp, r, ar)
-        }
-        
-        osin.OutputJSON(resp, w, r)
-    }
-}
+```curl
+curl --location 'http://127.0.0.1:8884/v1/oauth/verify' \
+--header 'Authorization: Bearer '
 ```
-
 
 ## 配置说明
 
@@ -188,14 +159,14 @@ Redis:
   Type: "node"
   Tls: false
 
-Domain: "http://localhost:8080"
+Domain: "http://localhost:8884"
 ```
 
 ## 快速开始
 
 1. 克隆项目
 ```bash
-git clone https://github.com/yourusername/oauth2.git
+git clone https://https://github.com/CrazyTata/oauth2.git
 ```
 
 2. 配置环境
