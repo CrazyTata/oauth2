@@ -15,7 +15,7 @@ func CreateClientHandler(svc *svc.ServiceContext) http.HandlerFunc {
 		client := storage.CreateClientWithInformation(
 			"1234",      // client_id
 			"secret123", // client_secret
-			"http://127.0.0.1:8883/v1/oauth/callback", // redirect_uri
+			"http://127.0.0.1:8884/v1/oauth/callback", // redirect_uri
 			nil, // user_data
 		)
 
