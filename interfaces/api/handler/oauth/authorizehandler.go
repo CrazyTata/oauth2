@@ -1,7 +1,6 @@
 package oauth
 
 import (
-	"log"
 	"net/http"
 	"oauth2/infrastructure/svc"
 
@@ -30,9 +29,7 @@ func AuthorizeHandler(svc *svc.ServiceContext) http.HandlerFunc {
 				return
 			}
 
-			// 设置授权
 			ar.Authorized = true
-			log.Printf("授权请求配置: Server.Config.AccessExpiration=%d", server.Config.AccessExpiration)
 
 			// 完成授权请求,这里只会返回授权码
 			server.FinishAuthorizeRequest(resp, r, ar)
