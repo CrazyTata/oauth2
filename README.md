@@ -88,21 +88,25 @@
 ```mermaid
 sequenceDiagram
     participant Client
-    participant Server
-    participant MySQL
-    participant Redis
-
-    Client->>Server: 1. 请求授权
-    Server->>MySQL: 2. 验证客户端
-    MySQL-->>Server: 3. 返回客户端信息
-    Server->>MySQL: 4. 保存授权码
-    Server-->>Client: 5. 返回授权码
-    Client->>Server: 6. 请求访问令牌
-    Server->>MySQL: 7. 验证授权码
-    Server->>MySQL: 8. 保存访问令牌
-    Server-->>Client: 9. 返回访问令牌
+    participant AuthEndpoint
+    participant CallbackHandler
+    participant Storage
+    
+    Client->>AuthEndpoint: 1. GET /oauth/authorize
+    Note right of Client: client_id, redirect_uri, response_type=code
+    
+    AuthEndpoint->>Storage: 2. SaveAuthorize()
+    Storage-->>AuthEndpoint: 3. 保存授权码
+    AuthEndpoint-->>Client: 4. 返回授权码(重定向)
+    
+    Client->>CallbackHandler: 5. GET /oauth/callback?code=xxx
+    CallbackHandler->>Storage: 6. LoadAuthorize(code)
+    Storage-->>CallbackHandler: 7. 验证授权码
+    CallbackHandler->>Storage: 8. RemoveAuthorize(code)
+    CallbackHandler->>Storage: 9. SaveAccess()
+    Storage-->>CallbackHandler: 10. 保存访问令牌
+    CallbackHandler-->>Client: 11. 返回访问令牌和刷新令牌
 ```
-
 ## API 接口
 
 
