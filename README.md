@@ -71,9 +71,7 @@
 
 1. **表结构设计**：
    - oauth_clients: 客户端信息表
-   - oauth_authorize: 授权码信息表
-   - oauth_access: 访问令牌表
-   - oauth_refresh: 刷新令牌表
+   - oauth_token: 授权码信息表
 
 2. **缓存策略**：
    - 使用 Redis 缓存频繁访问的数据
@@ -107,27 +105,76 @@ sequenceDiagram
 
 ## API 接口
 
-### 1. 授权端点
-```
-GET /oauth2/authorize
+
+### 1 初始化存储
+
+```go
+func initStorage(svcCtx *svc.ServiceContext) *service.Storage {
+    storage := service.NewStorage(svcCtx, "oauth2_")
+    err := storage.CreateSchemas()
+    if err != nil {
+        panic(err)
+    }
+    return storage
+}
 ```
 
-### 2. 令牌端点
-```
-POST /oauth2/token
+### 2 创建OAuth服务器
+
+```go
+func NewOAuthServer(storage *service.Storage) *osin.Server {
+    config := osin.NewServerConfig()
+    config.AllowedAuthorizeTypes = osin.AllowedAuthorizeType{
+        osin.CODE,
+    }
+    config.AllowedAccessTypes = osin.AllowedAccessType{
+        osin.AUTHORIZATION_CODE,
+        osin.REFRESH_TOKEN,
+    }
+    
+    server := osin.NewServer(config, storage)
+    return server
+}
 ```
 
-### 3. 用户信息端点
-```
-GET /oauth2/userinfo
+### 3 实现授权码授权端点
+
+```go
+func AuthorizeHandler(svc *svc.ServiceContext) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        server := NewOAuthServer(svc.Storage)
+        resp := server.NewResponse()
+        defer resp.Close()
+        
+        if ar := server.HandleAuthorizeRequest(resp, r); ar != nil {
+            ar.Authorized = true
+            server.FinishAuthorizeRequest(resp, r, ar)
+        }
+        
+        osin.OutputJSON(resp, w, r)
+    }
+}
 ```
 
-### 4. 客户端管理接口
+### 4 实现客户端授权端点
+
+```go
+func TokenHandler(svc *svc.ServiceContext) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        server := NewOAuthServer(svc.Storage)
+        resp := server.NewResponse()
+        defer resp.Close()
+        
+        if ar := server.HandleAccessRequest(resp, r); ar != nil {
+            ar.Authorized = true
+            server.FinishAccessRequest(resp, r, ar)
+        }
+        
+        osin.OutputJSON(resp, w, r)
+    }
+}
 ```
-POST /oauth2/clients    # 创建客户端
-GET /oauth2/clients     # 获取客户端列表
-DELETE /oauth2/clients  # 删除客户端
-```
+
 
 ## 配置说明
 
@@ -169,7 +216,3 @@ make run
 ```bash
 docker-compose up -d
 ```
-
-## 许可证
-
-MIT License 
