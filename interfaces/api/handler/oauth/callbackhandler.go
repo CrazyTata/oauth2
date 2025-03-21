@@ -45,6 +45,7 @@ func CallbackHandler(svc *svc.ServiceContext) http.HandlerFunc {
 			Scope:           authData.Scope,
 			GenerateRefresh: true,
 			Authorized:      true,
+			Expiration:      server.Config.AccessExpiration,
 		}
 
 		// 处理访问令牌请求

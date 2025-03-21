@@ -34,6 +34,16 @@ func RegisterHandlers(server *rest.Server, svc *svc.ServiceContext) {
 				Path:    "/v1/oauth/callback",
 				Handler: oauth.CallbackHandler(svc),
 			},
+			{
+				Method:  http.MethodPost,
+				Path:    "/v1/oauth/refresh",
+				Handler: oauth.RefreshTokenHandler(svc),
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/v1/oauth/verify",
+				Handler: oauth.VerifyTokenHandler(svc),
+			},
 		},
 	)
 }

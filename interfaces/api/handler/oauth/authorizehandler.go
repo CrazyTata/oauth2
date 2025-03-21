@@ -1,8 +1,8 @@
 package oauth
 
 import (
+	"log"
 	"net/http"
-	"oauth2/application/service"
 	"oauth2/infrastructure/svc"
 
 	"github.com/openshift/osin"
@@ -30,8 +30,9 @@ func AuthorizeHandler(svc *svc.ServiceContext) http.HandlerFunc {
 				return
 			}
 
-			// 授权请求
+			// 设置授权
 			ar.Authorized = true
+			log.Printf("授权请求配置: Server.Config.AccessExpiration=%d", server.Config.AccessExpiration)
 
 			// 完成授权请求,这里只会返回授权码
 			server.FinishAuthorizeRequest(resp, r, ar)
@@ -45,13 +46,4 @@ func AuthorizeHandler(svc *svc.ServiceContext) http.HandlerFunc {
 		// 输出响应(可能是重定向或错误信息)
 		osin.OutputJSON(resp, w, r)
 	}
-}
-
-// 初始化 OAuth 服务器
-func newOAuthServer(svc *svc.ServiceContext) *osin.Server {
-	config := osin.NewServerConfig()
-	config.AllowedAccessTypes = osin.AllowedAccessType{osin.AUTHORIZATION_CODE, osin.CLIENT_CREDENTIALS}
-	config.AllowGetAccessRequest = true
-	store := service.NewStorage(svc, "osin_")
-	return osin.NewServer(config, store)
 }

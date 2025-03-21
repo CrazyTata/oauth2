@@ -340,21 +340,22 @@ func (s *Storage) RemoveAccess(token string) error {
 // AuthorizeData and AccessData DON'T NEED to be loaded if not easily available.
 // Optionally can return error if expired.
 func (s *Storage) LoadRefresh(token string) (*osin.AccessData, error) {
-	var accessToken string
+	var result struct {
+		AccessToken string `db:"access_token"`
+	}
+
 	query := fmt.Sprintf(`SELECT access_token FROM %stoken 
 		WHERE refresh_token = ? AND type = 'access'`, s.tablePrefix)
 
-	err := s.db.QueryRowPartial(&struct {
-		AccessToken string `db:"access_token"`
-	}{}, query, token)
-
+	err := s.db.QueryRowPartial(&result, query, token)
 	if err == sqlx.ErrNotFound {
 		return nil, osin.ErrNotFound
 	} else if err != nil {
 		return nil, fmt.Errorf("加载刷新令牌失败: %v", err)
 	}
 
-	return s.LoadAccess(accessToken)
+	// 使用获取到的access_token加载完整的访问数据
+	return s.LoadAccess(result.AccessToken)
 }
 
 // RemoveRefresh revokes or deletes refresh AccessData.
